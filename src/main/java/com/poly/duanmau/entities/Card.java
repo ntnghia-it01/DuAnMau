@@ -17,5 +17,9 @@ import lombok.NoArgsConstructor;
 @Data // Tạo getter/setter
 public class Card {
     private int id;
-    private boolean status;
+    private int status;
 }
+
+// 1: Trống
+// 2: Bận
+// 3: Thất lạc

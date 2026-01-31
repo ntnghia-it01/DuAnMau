@@ -23,5 +23,19 @@ public class Bill {
     private Card card;
     private Date checkIn;
     private Date checkOut;
-    private boolean status;
+    private int status;
 }
+
+
+// String => Chờ thanh toán
+// int => 
+// 1: Chờ thanh toán
+// 2: Đã thanh toán
+// 3: Đã hoàn thành
+// 4: Huỷ đơn
+// 1 -> 3 false || 1 -> 2 true
+// statusUpdate > status && statusUpdate == status + 1
+
+// status.equals("Chờ thanh toán")
+
+// tinyint < smallint < int 
