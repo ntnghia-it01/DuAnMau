@@ -6,6 +6,7 @@ package com.poly.duanmau.dao.impl;
 
 import com.poly.duanmau.dao.BillDAO;
 import com.poly.duanmau.entities.Bill;
+import com.poly.duanmau.utils.XJdbc;
 import java.util.List;
 
 /**
@@ -58,6 +59,7 @@ public class BillDAOImpl implements BillDAO{
             if(status > bill.getStatus() && status == bill.getStatus() + 1){
 //              Update status 
                 String update = "UPDATE FROM bills SET status=? WHERE id=?";
+                XJdbc.executeUpdate(update, status, billId);
                 return;
             }
             
