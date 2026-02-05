@@ -47,4 +47,10 @@ public class BillDetailDAOImpl implements BillDetailDAO{
         return billDetails;
     }
     
+    @Override
+    public BillDetail getByDrinkId(int drinkId, int billId){
+        String sql = "SELECT * FROM bill_details WHERE bill_id=? AND drink_id=?";
+        return null;
+    }
+    
 }

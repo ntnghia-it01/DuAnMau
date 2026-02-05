@@ -15,6 +15,7 @@ import com.poly.duanmau.dao.impl.CardDAOImpl;
 import com.poly.duanmau.dao.impl.DrinkDAOImpl;
 import com.poly.duanmau.dao.impl.UserDAOImpl;
 import com.poly.duanmau.entities.Bill;
+import com.poly.duanmau.entities.BillDetail;
 import com.poly.duanmau.entities.Card;
 import com.poly.duanmau.entities.Drink;
 import com.poly.duanmau.entities.User;
@@ -125,10 +126,148 @@ public class POSServices {
 //          Sản phẩm hết hàng
             return;
         }
-       
-       
 //      Sản phẩm muốn thêm có tồn tại trong đơn hàng hiện tại hay không?
 //      - Nếu không tồn tại thì tạo 1 billDetail với số lượng là 1
 //      - Nếu đã tồn tại thì lấy số lượng hiện tại + 1
+
+        BillDetail billDetail = this.billDetailDAO.getByDrinkId(drinkId, billId);
+        if(billDetail != null){
+            billDetail.setQuantity(billDetail.getQuantity() + 1);
+            this.billDetailDAO.update(billDetail);
+        }else{
+            BillDetail billDetailInsert = new BillDetail();
+            billDetailInsert.setBill(bill);
+            billDetailInsert.setDrink(drink);
+            billDetailInsert.setQuantity(1);
+            billDetailInsert.setDiscount(drink.getDiscount());
+            billDetailInsert.setUnitPrice(drink.getUnitPrice());
+            this.billDetailDAO.create(billDetailInsert);
+            
+        }
+    }
+    
+//  Kiểm tra theo quantity
+//  - Nếu quantity > 0 cập nhật số lượng sản phẩm theo quantity
+//  - Nếu quantity <= 0 xoá sản phẩm khỏi đơn hàng 
+    
+    public void updateDrinkQuantity(int userId, int billId, int drinkId, int quantity){
+        User user = this.checkUser(userId);
+       if(user == null) return;
+//      Đơn hàng đang tương tác có thuộc của user hiện tại không?
+       Bill bill = this.billDAO.getById(billId);
+       if(bill == null){
+//           Thông báo lỗi
+            return;
+       }
+       if(bill.getUser().getId() != userId){
+//          Đơn hàng không thuộc sở hữu của user
+           return;
+       }
+        
+//      Trạng thái đơn hàng có phải là chờ thanh toán không?
+       if(bill.getStatus() != 1){
+//         Đơn hàng không được sửa
+           return;
+       }
+       BillDetail billDetail = this.billDetailDAO.getByDrinkId(drinkId, billId);
+       if(billDetail == null){
+//         Có lỗi trong quá trình cập nhật
+           return;
+       }
+       
+//      Kiểm tra sản phẩm còn hàng hay không?
+        Drink drink = this.dinkDAO.getById(billId);
+        if(!drink.isAvailable()){
+//          Sản phẩm hết hàng
+//          Xoá sản phẩm khỏi chi tiết đơn hàng hiện tại
+            this.billDetailDAO.delete(billDetail);
+            return;
+        }
+        
+        if(quantity > 0){
+            billDetail.setQuantity(billDetail.getQuantity() + quantity);
+            this.billDetailDAO.update(billDetail);
+        }else{
+            this.billDetailDAO.delete(billDetail);
+        }
+    }
+    
+    public void paymentSuccessBill(int billId, int userId){
+       User user = this.checkUser(userId);
+       if(user == null) return;
+//      Đơn hàng đang tương tác có thuộc của user hiện tại không?
+       Bill bill = this.billDAO.getById(billId);
+       if(bill == null){
+//           Thông báo lỗi
+            return;
+       }
+       if(bill.getUser().getId() != userId){
+//          Đơn hàng không thuộc sở hữu của user
+           return;
+       }
+       
+       if(bill.getStatus() != 1){
+//            Trạng thái đơn hàng không thể hoàn thành thanh toán
+           return;
+       }
+       
+       bill.setStatus(2);
+       this.billDAO.update(bill);
+    }
+    
+    public void finishBill(int billId, int userId){
+        User user = this.checkUser(userId);
+       if(user == null) return;
+//      Đơn hàng đang tương tác có thuộc của user hiện tại không?
+       Bill bill = this.billDAO.getById(billId);
+       if(bill == null){
+//           Thông báo lỗi
+            return;
+       }
+       if(bill.getUser().getId() != userId){
+//          Đơn hàng không thuộc sở hữu của user
+           return;
+       }
+       
+       if(bill.getStatus() != 2){
+//            Trạng thái đơn hàng không thể hoàn thành thanh toán
+           return;
+       }
+       
+       bill.setStatus(3);
+       bill.setCheckOut(new Date());
+       this.billDAO.update(bill);
+       
+       Card card = bill.getCard();
+       card.setStatus(1);
+       this.cardDAO.update(card);
+    }
+    
+    public void cancelBill(int billId, int userId){
+        User user = this.checkUser(userId);
+       if(user == null) return;
+//      Đơn hàng đang tương tác có thuộc của user hiện tại không?
+       Bill bill = this.billDAO.getById(billId);
+       if(bill == null){
+//           Thông báo lỗi
+            return;
+       }
+       if(bill.getUser().getId() != userId){
+//          Đơn hàng không thuộc sở hữu của user
+           return;
+       }
+       
+       if(bill.getStatus() != 1){
+//            Trạng thái đơn hàng không thể hoàn thành thanh toán
+           return;
+       }
+       
+       bill.setStatus(4);
+       bill.setCheckOut(new Date());
+       this.billDAO.update(bill);
+       
+       Card card = bill.getCard();
+       card.setStatus(1);
+       this.cardDAO.update(card);
     }
 }

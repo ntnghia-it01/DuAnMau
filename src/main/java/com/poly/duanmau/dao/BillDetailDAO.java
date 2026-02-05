@@ -13,4 +13,6 @@ import java.util.List;
  */
 public interface BillDetailDAO extends CrudDAO<BillDetail, Integer>{
     List<BillDetail> findByBillId(int billId);
+//  Lấy thông tin chi tiết đơn hàng nếu sản phẩm muốn thêm đã tồn tại trong đơn hàng 
+    BillDetail getByDrinkId(int drinkId, int billId);
 }
